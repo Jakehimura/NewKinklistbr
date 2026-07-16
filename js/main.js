@@ -1771,4 +1771,3 @@ function abrirComparacao() {
 
   // Usar o sistema de comparação
   compatibilitySystem.openComparisonModal();
-}
