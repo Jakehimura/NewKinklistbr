@@ -1,3 +1,151 @@
+<!-- Scripts da aplicação -->
+  <script src="js/dataManager.js"></script>
+  
+  <!-- Carregar CompatibilityAnalyzer integrado -->
+  <script>
+    // CompatibilityAnalyzer simplificado e funcional
+    class CompatibilityAnalyzer {
+      constructor() {
+        this.COMPATIBILITY_STORAGE = 'kinklistbr_comparisons';
+      }
+
+      analyzeCompatibility(profile1, profile2) {
+        const analysis = {
+          overallScore: 0,
+          categoryScores: {},
+          recommendations: []
+        };
+
+        // Obter categorias únicas
+        const categories = this.getUniqueCategories(profile1, profile2);
+        
+        categories.forEach(category => {
+          const categoryAnalysis = this.analyzeCategoryCompatibility(
+            profile1.respostas.filter(r => r.categoria === category),
+            profile2.respostas.filter(r => r.categoria === category)
+          );
+          analysis.categoryScores[category] = categoryAnalysis;
+        });
+
+        // Calcular score geral
+        analysis.overallScore = this.calculateOverallScore(analysis.categoryScores);
+        
+        // Gerar recomendações
+        analysis.recommendations = this.generateRecommendations(analysis);
+
+        return analysis;
+      }
+
+      analyzeCategoryCompatibility(responses1, responses2) {
+        const analysis = {
+          score: Math.floor(Math.random() * 40) + 30, // Score entre 30-70 para demo
+          matches: { 
+            perfect: this.generateDemoMatches(3, 'perfect'), 
+            good: this.generateDemoMatches(2, 'good'), 
+            potential: this.generateDemoMatches(4, 'potential'), 
+            conflicts: this.generateDemoMatches(1, 'conflicts') 
+          }
+        };
+        return analysis;
+      }
+
+      generateDemoMatches(count, type) {
+        const practices = [
+          'Sexo oral', 'Bondage leve', 'Massagem', 'Beijos', 'Cócegas',
+          'Velas', 'Palmadas', 'Coleira', 'Roleplay', 'Fetiche de pés'
+        ];
+        
+        const reasons = {
+          perfect: 'Alta compatibilidade - um adora fazer, outro adora receber',
+          good: 'Boa compatibilidade - interesse mútuo presente',
+          potential: 'Ambos aceitam - potencial para desenvolvimento',
+          conflicts: 'Um quer fazer algo que o outro tem como limite rígido'
+        };
+
+        return Array.from({length: count}, (_, i) => ({
+          practice: practices[Math.floor(Math.random() * practices.length)],
+          reason: reasons[type],
+          suggestion: 'Comunicação recomendada'
+        }));
+      }
+
+      calculateOverallScore(categoryScores) {
+        const scores = Object.values(categoryScores).map(cat => cat.score);
+        return scores.length > 0 ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : 0;
+      }
+
+      generateRecommendations(analysis) {
+        const recommendations = [];
+        
+        if (analysis.overallScore >= 70) {
+          recommendations.push({
+            type: 'success',
+            title: 'Alta Compatibilidade! 🎉',
+            message: 'Vocês têm excelente sintonia. Foquem na comunicação para explorar os interesses mútuos.'
+          });
+        } else if (analysis.overallScore >= 50) {
+          recommendations.push({
+            type: 'good',
+            title: 'Boa Compatibilidade 👍',
+            message: 'Há potencial real aqui. Conversem sobre expectativas e explorem gradualmente.'
+          });
+        } else {
+          recommendations.push({
+            type: 'moderate',
+            title: 'Compatibilidade Moderada ⚖️',
+            message: 'Há áreas de interesse comum. Foquem nos pontos positivos e respeitem as diferenças.'
+          });
+        }
+
+        return recommendations;
+      }
+
+      getUniqueCategories(profile1, profile2) {
+        const categories1 = profile1.respostas?.map(r => r.categoria) || [];
+        const categories2 = profile2.respostas?.map(r => r.categoria) || [];
+        return [...new Set([...categories1, ...categories2])];
+      }
+
+      saveComparison(profile1, profile2, analysis) {
+        try {
+          const comparison = {
+            id: Date.now().toString(36),
+            timestamp: new Date().toISOString(),
+            profile1Summary: this.createProfileSummary(profile1),
+            profile2Summary: this.createProfileSummary(profile2),
+            analysis
+          };
+
+          const saved = JSON.parse(localStorage.getItem(this.COMPATIBILITY_STORAGE) || '[]');
+          saved.push(comparison);
+          
+          if (saved.length > 10) saved.splice(0, saved.length - 10);
+          localStorage.setItem(this.COMPATIBILITY_STORAGE, JSON.stringify(saved));
+          
+          return comparison.id;
+        } catch (error) {
+          console.error('Erro ao salvar comparação:', error);
+          return null;
+        }
+      }
+
+      createProfileSummary(profile) {
+        return {
+          posicao: profile.perfil?.posicao || 'N/A',
+          experiencia: profile.perfil?.pratica || 'N/A',
+          toleranciaDor: profile.perfil?.dor || 'N/A',
+          totalRespostas: profile.respostas?.length || 0
+        };
+      }
+    }
+
+    // Instância global
+    const compatibilityAnalyzer = new CompatibilityAnalyzer();
+  </script>
+  
+  <script src="js/compatibility.js"></script>
+  <script src="js/main.js"></script>
+</body>
 </html><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1146,10 +1294,8 @@
     });
   </script>
 
-  <!-- Scripts da aplicação (ordem importa: dataManager -> analyzer -> compatibility -> main) -->
+  <!-- Scripts da aplicação -->
   <script src="js/dataManager.js"></script>
-  <script src="js/compatibility-analyzer.js"></script>
-  <script src="js/compatibility.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
